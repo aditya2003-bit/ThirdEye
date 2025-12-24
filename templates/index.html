@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Third Eye AI</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #1a1a1a; color: white; }
+        video { width: 100%; max-width: 500px; border: 2px solid #00ff00; border-radius: 10px; }
+        #snapBtn { 
+            background-color: #00ff00; color: black; border: none; 
+            padding: 20px 40px; font-size: 24px; border-radius: 50px; 
+            margin-top: 20px; cursor: pointer; font-weight: bold;
+        }
+        #status { margin-top: 20px; font-size: 18px; color: #ccc; }
+    </style>
+</head>
+<body>
+
+    <h1>👁️ Third Eye</h1>
+    <video id="video" autoplay playsinline></video>
+    <br>
+    <button id="snapBtn" onclick="captureAndAnalyze()">Describe Scene</button>
+    <div id="status">Tap the button to identify objects...</div>
+
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const status = document.getElementById('status');
+
+        // Access the camera
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => { console.error("Camera error:", err); });
+
+        async function captureAndAnalyze() {
+            status.innerText = "Analyzing...";
+            
+            // Draw video frame to canvas
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            // Convert to blob (image file)
+            canvas.toBlob(async function(blob) {
+                const formData = new FormData();
+                formData.append('image', blob, 'capture.jpg');
+
+                try {
+                    const response = await fetch('/detect', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    
+                    status.innerText = data.message;
+                    speak(data.message);
+                } catch (error) {
+                    status.innerText = "Error connecting to server.";
+                }
+            }, 'image/jpeg');
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>

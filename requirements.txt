@@ -1,5 +1,9 @@
-Flask==2.3.3
-ultralytics==8.0.196
-Pillow==10.0.0
-gunicorn==20.1.0
-opencv-python-headless==4.8.0.76
+Flask
+ultralytics==8.2.0
+Pillow
+gunicorn
+opencv-python-headless
+# Force a compatible PyTorch version
+torch==2.5.1
+torchvision==0.20.1
+torchaudio==2.5.1
